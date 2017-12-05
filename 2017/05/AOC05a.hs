@@ -1,44 +1,54 @@
 module AOC05a where
 
-readNum :: (Num a, Read a) => String -> a
-readNum = read
+import Control.Arrow (first, second)
+import qualified Data.List.Zipper as Z
 
-data Action = Ready | SteppingL Int | SteppingR Int | Done deriving (Eq, Ord, Show)
-data Instr = Blank | Jump Int deriving (Eq, Ord, Show)
-data Maze = Maze (Instr, ([Instr], [Instr]))
-data Moment = Moment (Action, Maze) deriving Show
 
-instance Show Maze where
-    show (Maze (e, (l, r))) = (show (reverse $ take 3 l))
-                           ++ " [ "
-                           ++ (show e)
-                           ++ " ] "
-                           ++ (show (take 3 r))
+numbers :: String -> IO [Int]
+numbers = fmap (map read . lines) . readFile
 
-moveL :: Maze -> Maze
-moveL (Maze (o, (l:ls, rs))) = Maze (l, (ls, o:rs))
+move :: (Num a, Ord a) => Z.Zipper a -> (Z.Zipper a -> Z.Zipper a)
+move z | c < 0 = Z.left
+       | c > 0 = Z.right
+       | otherwise = id
+    where c = Z.cursor z
 
-moveR :: Maze -> Maze
-moveR (Maze (o, (ls, r:rs))) = Maze (r, (o:ls, rs))
-
-move :: Moment -> Moment
-move (Moment (Ready, z@(Maze (Blank, _)))) = Moment (Done, z)
-move (Moment (Ready, Maze (Jump o, lr))) | o < 0 = Moment (SteppingL (-o+1), Maze (Jump (o+1), lr))
-                                         | o > 0 = Moment (SteppingR (o+1), Maze (Jump (o+1), lr))
-                                         | otherwise = Moment (Ready, Maze (Jump (o+1), lr))
-move (Moment (SteppingL 0, z)) = Moment (Ready, z)
-move (Moment (SteppingR 0, z)) = Moment (Ready, z)
-move (Moment (SteppingL n, z)) = Moment (SteppingL (n-1), moveL z)
-move (Moment (SteppingR n, z)) = Moment (SteppingR (n-1), moveR z)
-move (Moment (Done, z)) = Moment (Done, z)
-
-strip :: Moment -> (Action, Instr)
-strip (Moment (a, Maze (m, _))) = (a, m)
+takeSteps :: Z.Zipper Int -> Z.Zipper Int
+takeSteps z = z'' !! (abs c)
+    where c = Z.cursor z
+          z' = Z.replace (c+1) z
+          z'' = iterate (move z) z'
 
 main :: IO ()
 main = do
-    js <- fmap (map (Jump . readNum) . lines) $ readFile "input.txt"
-    let jumps = Moment (Ready, Maze (head js, (repeat Blank, tail js ++ repeat Blank)))
-        moments = iterate move jumps
-    mapM_ print moments
+    insts <- numbers "input.txt"
+    let l = length insts
+        z = Z.fromList insts
+    let r = iterate takeSteps z
+    print (r !! 325926) -- hacking away
 
+-- Z.beginp :: Z.Zipper a -> Bool
+-- Z.cursor :: Z.Zipper a -> a
+-- Z.delete :: Z.Zipper a -> Z.Zipper a
+-- Z.duplicatez :: Z.Zipper a -> Z.Zipper (Z.Zipper a)
+-- Z.empty :: Z.Zipper a
+-- Z.emptyp :: Z.Zipper a -> Bool
+-- Z.end :: Z.Zipper a -> Z.Zipper a
+-- Z.endp :: Z.Zipper a -> Bool
+-- Z.extendz :: (Z.Zipper a -> b) -> Z.Zipper a -> Z.Zipper b
+-- Z.extractz :: Z.Zipper a -> a
+-- Z.foldlz :: (b -> Z.Zipper a -> b) -> b -> Z.Zipper a -> b
+-- Z.foldlz' :: (b -> Z.Zipper a -> b) -> b -> Z.Zipper a -> b
+-- Z.foldrz :: (Z.Zipper a -> b -> b) -> b -> Z.Zipper a -> b
+-- Z.fromList :: [a] -> Z.Zipper a
+-- Z.fromListEnd :: [a] -> Z.Zipper a
+-- Z.insert :: a -> Z.Zipper a -> Z.Zipper a
+-- Z.left :: Z.Zipper a -> Z.Zipper a
+-- Z.pop :: Z.Zipper a -> Z.Zipper a
+-- Z.push :: a -> Z.Zipper a -> Z.Zipper a
+-- Z.replace :: a -> Z.Zipper a -> Z.Zipper a
+-- Z.reversez :: Z.Zipper a -> Z.Zipper a
+-- Z.right :: Z.Zipper a -> Z.Zipper a
+-- Z.safeCursor :: Z.Zipper a -> Maybe a
+-- Z.start :: Z.Zipper a -> Z.Zipper a
+-- Z.toList :: Z.Zipper a -> [a]
