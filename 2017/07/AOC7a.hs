@@ -1,0 +1,1 @@
+-- I just solved this one in Vim, with a shell call to `sort | uniq -c`.
