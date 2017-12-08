@@ -51,5 +51,5 @@ run (i, c) cpu = if check cpu c then update i cpu else cpu
 main :: IO ()
 main = do
     cmds <- fmap (map (parseCondInstr . words) . lines) $ readFile "input.txt"
-    print $ maximum $ M.elems $ foldl (flip run) M.empty cmds
+    print $ maximum $ concatMap M.elems $ scanl (flip run) M.empty cmds
 
