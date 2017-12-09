@@ -1,32 +1,21 @@
 module AOC09b where
 
-import Data.List (group, unfoldr)
-import Debug.Trace
-
-type Level = Int
 type Stream = String
 
-data State = Collect
-           | Garbage
-           | Cancel
-           deriving (Eq, Ord, Show)
+bypassGroups :: Stream -> [Int]
+bypassGroups []      = []                   -- stop if done
+bypassGroups ('<':r) = countGarbage r       -- enter garbage mode
+bypassGroups (c:r)   = bypassGroups r       -- toss non-garbage
 
-type Cursor = (Level, State, Stream)
-
-collectGroups :: Stream -> [Int]
-collectGroups [] = []                       -- stop if done
-collectGroups ('<':r) = bypassGarbage r     -- enter garbage mode
-collectGroups (c:r) = collectGroups r       -- toss non-garbage
-
-bypassGarbage :: Stream -> [Int]
-bypassGarbage [] = []                       -- stop if done
-bypassGarbage ('!':[]) = []                 -- unlikely corner case
-bypassGarbage ('!':c:r) = bypassGarbage r   -- skip canceled garbage
-bypassGarbage ('>':r) = collectGroups r     -- end garbage, back to collecting
-bypassGarbage (c:r) = 1 : bypassGarbage r   -- count garbage
+countGarbage :: Stream -> [Int]
+countGarbage []        = []                 -- stop if done
+countGarbage ('!':[])  = []                 -- unlikely corner case
+countGarbage ('!':c:r) = countGarbage r     -- skip canceled garbage
+countGarbage ('>':r)   = bypassGroups r     -- end garbage, back to collecting
+countGarbage (c:r)     = 1 : countGarbage r -- count garbage
 
 main :: IO ()
 main = do
     s <- readFile "input.txt"
-    print $ sum $ collectGroups s
+    print $ sum $ bypassGroups s
 
