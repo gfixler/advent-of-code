@@ -1,5 +1,6 @@
 module AOC09a where
 
+import Data.List (group, unfoldr)
 import Debug.Trace
 
 type Level = Int
@@ -25,8 +26,16 @@ bypassGarbage ('!':c:r) = bypassGarbage r   -- skip character after '!'
 bypassGarbage ('>':r) = collectGroups r     -- end garbage, back to collecting
 bypassGarbage (c:r) = bypassGarbage r       -- do not keep garbage
 
+-- countGroups :: Stream -> Int
+-- countGroups = go (0, 0)
+--     where go (l, _) "" = l
+--           go (l, a) ('{':r) = let l' = l + 1 in go (l, a + l)
+--           go (l, a) ('}':r) = go (l - 1, a)
+
 main :: IO ()
 main = do
     s <- readFile "input.txt"
-    putStrLn $ collectGroups s
+    let g = collectGroups s
+        n = foldl (\(l, a) c -> if c == '{' then (l + 1, a + l + 1) else (l - 1, a)) (0, 0) g
+    print n
 
