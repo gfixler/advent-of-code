@@ -27,20 +27,21 @@ reverseSection i l m = M.union updates m
           values = map (m M.!) indices
           updates = M.fromList $ zip indices (reverse values)
 
+mapLength :: M.Map a b -> Int
+mapLength = length . M.keys
+
+knotHashStep :: HashStep -> Length -> HashStep
+knotHashStep (c, s, k) l = ((c + l + s) `mod` mapLength k, s + 1, reverseSection c l k)
+
 stdList :: KnotList
 stdList = M.fromList $ zip is is
     where is = [0..255]
 
-knotHashStep :: HashStep -> Length -> HashStep
-knotHashStep (c, s, k) l = ((c + l + s) `mod` 256, s + 1, reverseSection s l k)
-
 main :: IO ()
 main = do
     lengths <- fmap parseInput $ readFile "input.txt"
-    let result = scanl knotHashStep (0, 0, stdList) lengths
-        (c',s',m) = last result
+    let (c',s',m) = foldl knotHashStep (0, 0, stdList) lengths
         elem1 = m M.! 0
         elem2 = m M.! 1
-    mapM_ print result
     print $ elem1 * elem2
 
