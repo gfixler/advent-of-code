@@ -5,11 +5,11 @@ import Data.List.Split (splitOn)
 
 type Index = Int
 type Length = Int
-type KnotList = M.Map Int Int
+type KnotList a = M.Map Int a
 
 type Cursor = Int
 type Step = Int
-type HashStep = (Cursor, Step, KnotList)
+type HashStep a = (Cursor, Step, KnotList a)
 
 readInt :: String -> Int
 readInt = read
@@ -20,7 +20,7 @@ parseInput = map readInt . splitOn "," . filter (/= '\n')
 getWrappedIndices :: Length -> Index -> Length -> [Int]
 getWrappedIndices ll i l = map (`mod` ll) [i .. i + l - 1]
 
-reverseSection :: Index -> Length -> KnotList -> KnotList
+reverseSection :: Index -> Length -> KnotList a -> KnotList a
 reverseSection i l m = M.union updates m
     where knotsCount = length $ M.keys m
           indices = getWrappedIndices knotsCount i l
@@ -30,10 +30,10 @@ reverseSection i l m = M.union updates m
 mapLength :: M.Map a b -> Int
 mapLength = length . M.keys
 
-knotHashStep :: HashStep -> Length -> HashStep
+knotHashStep :: HashStep a -> Length -> HashStep a
 knotHashStep (c, s, k) l = ((c + l + s) `mod` mapLength k, s + 1, reverseSection c l k)
 
-stdList :: KnotList
+stdList :: KnotList Int
 stdList = M.fromList $ zip is is
     where is = [0..255]
 
