@@ -37,10 +37,8 @@ stdList = M.fromList $ zip is is
     where is = [0..255]
 
 hexDigits :: [String]
-hexDigits = zipWith (\a b -> [a, b]) column2 column1
-    where digits = ['0' .. '9'] ++ ['a' .. 'f']
-          column1 = concat $ replicate 16 digits
-          column2 = concatMap (replicate 16) digits
+hexDigits = (\a b -> [a, b]) <$> hs <*> hs
+    where hs = "0123456789abcdef"
 
 toHexDigit :: Int -> String
 toHexDigit = (hexDigits !!)
