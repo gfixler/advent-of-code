@@ -7,6 +7,10 @@ type Index = Int
 type Length = Int
 type KnotList = M.Map Int Int
 
+type Cursor = Int
+type Step = Int
+type HashStep = (Cursor, Step, KnotList)
+
 readInt :: String -> Int
 readInt = read
 
@@ -27,8 +31,16 @@ stdList :: KnotList
 stdList = M.fromList $ zip is is
     where is = [0..255]
 
+knotHashStep :: HashStep -> Length -> HashStep
+knotHashStep (c, s, k) l = ((c + l + s) `mod` 256, s + 1, reverseSection s l k)
+
 main :: IO ()
 main = do
-    s <- fmap parseInput $ readFile "input.txt"
-    print $ reverseSection 0 189 stdList
+    lengths <- fmap parseInput $ readFile "input.txt"
+    let result = scanl knotHashStep (0, 0, stdList) lengths
+        (c',s',m) = last result
+        elem1 = m M.! 0
+        elem2 = m M.! 1
+    mapM_ print result
+    print $ elem1 * elem2
 
