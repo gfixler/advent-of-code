@@ -33,9 +33,14 @@ parseInput = map (read :: String -> Dir)
            . map toUpper
            . filter (/= '\n')
 
+hexTaxicab :: Pos -> Int
+hexTaxicab (x, y) = diag + x'' + (y'' `div` 2)
+    where (x', y') = (abs x, abs y)
+          diag = min x' y'
+          (x'', y'') = (x' - diag, y' - diag)
+
 main :: IO ()
 main = do
     s <- fmap parseInput $ readFile "input.txt"
-    let s' = foldl (flip move) origin s
-    print s'
+    print $ hexTaxicab $ foldl (flip move) origin s
 
