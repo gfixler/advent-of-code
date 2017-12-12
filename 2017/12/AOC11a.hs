@@ -2,8 +2,8 @@
 
 module AOC11a where
 
-import Data.List (nub)
-import qualified Data.Map as M ((!), Map, fromList, keys)
+import Data.List (nub, sort)
+import qualified Data.Map as M ((!), Map, fromList)
 
 type Prg = Int
 type Net = M.Map Prg [Prg]
@@ -15,13 +15,14 @@ parseProg s = case words s of
 parseInput :: String -> Net
 parseInput = M.fromList . map parseProg . lines
 
-spider :: Net -> ([Prg], [Prg]) -> [Prg]
-spider _ (old, [])   = old
-spider n (old, new) = spider n (old ++ new', new')
-    where new' = nub $ filter (not . (`elem` old)) $ concatMap (n M.!) new
+findGroup :: Net -> Prg -> [Prg]
+findGroup m p = f ([], [p])
+    where f (found, []) = found
+          f (found, pending) = f (found ++ new, new)
+            where new = nub $ filter (not . (`elem` found)) $ concatMap (m M.!) pending
 
 main :: IO ()
 main = do
     m <- fmap parseInput $ readFile "input.txt"
-    print $ length $ spider m ([], [0])
+    print $ sort $ findGroup m 0
 
