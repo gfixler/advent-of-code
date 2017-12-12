@@ -2,19 +2,26 @@
 
 module AOC11a where
 
-import qualified Data.Set as S (Set, fromList)
+import Data.List (nub)
+import qualified Data.Map as M ((!), Map, fromList, keys)
 
-parseProg :: String -> [(Int, Int)]
+type Prg = Int
+type Net = M.Map Prg [Prg]
+
+parseProg :: String -> (Prg, [Prg])
 parseProg s = case words s of
-    (p : "<->" : ps) -> let p' = read p
-                            ps' = map (read . filter (/= ',')) ps
-                            in [(min p' x, max p' x) | x <- ps']
+    (p : "<->" : ps) -> (read p, map (read . filter (/= ',')) ps)
 
-parseInput :: String -> S.Set (Int, Int)
-parseInput = S.fromList . concatMap parseProg . lines
+parseInput :: String -> Net
+parseInput = M.fromList . map parseProg . lines
+
+spider :: Net -> ([Prg], [Prg]) -> [Prg]
+spider _ (old, [])   = old
+spider n (old, new) = spider n (old ++ new', new')
+    where new' = nub $ filter (not . (`elem` old)) $ concatMap (n M.!) new
 
 main :: IO ()
 main = do
-    s <- fmap parseInput $ readFile "input.txt"
-    print s
+    m <- fmap parseInput $ readFile "input.txt"
+    print $ length $ spider m ([], [0])
 
