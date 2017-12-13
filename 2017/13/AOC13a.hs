@@ -10,11 +10,11 @@ parseInput s = case (words s) of
     [l, r] -> (read $ filter (/= ':') l, read r)
     _ -> undefined
 
-scan :: (Layer, Range) -> Time -> Pos
-scan (l, r) = (cycle ([0 .. r-1] ++ [r-2, r-3 .. 1]) !!)
+scan :: (Layer, Range) -> Pos
+scan (l, r) = cycle ([0 .. r-1] ++ [r-2, r-3 .. 1]) !! l
 
 main :: IO ()
 main = do
     s <- fmap (map parseInput . lines) $ readFile "input.txt"
-    mapM_ print $ zip s (map (flip scan 0) s)
+    print $ sum $ map ((\(l, r) -> l * r) . fst) $ filter ((== 0) . snd) $ zip s (map scan s)
 
